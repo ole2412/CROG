@@ -1,3 +1,8 @@
+# Run
+1. create env from yml with "conda env create -f environment.yml"
+2. build cython_nms with "python setup.py build_ext --inplace"
+
+
 # Language-guided Robot Grasping: CLIP-based Referring Grasp Synthesis in Clutter (CoRL2023)
 
 Created by Georgios Tziafas, Yucheng XU, Arushi Goel, Mohammadreza Kasaei, Zhibin Li, Hamidreza Kasaei

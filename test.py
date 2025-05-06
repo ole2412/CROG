@@ -9,8 +9,8 @@ import torch.utils.data
 from loguru import logger
 
 import utils.config as config
-from engine.engine import inference_with_grasp
-from model import build_segmenter
+from engine.crog_engine import inference_with_grasp
+from model import build_crog
 from utils.dataset import OCIDVLGDataset
 from utils.misc import setup_logger
 
@@ -66,13 +66,18 @@ def main():
                                               collate_fn=OCIDVLGDataset.collate_fn)
 
     # build model
-    model, _ = build_segmenter(args)
-    model = torch.nn.DataParallel(model).cuda()
-    logger.info(model)
+    model, _ = build_crog(args)
+    if torch.cuda.is_available():
+        model = torch.nn.DataParallel(model).cuda()
+    else:
+        model = torch.nn.DataParallel(model).cpu()
+        model = model.to('cpu')
+    # logger.info(model)
     
     save_path = os.path.join("./results", args.exp_name)
     os.makedirs(save_path, exist_ok=True)
 
+    logger.info(f"args.resume {args.resume}")
     if os.path.isfile(args.resume):
         logger.info("=> loading checkpoint '{}'".format(args.resume))
         checkpoint = torch.load(args.resume)
