@@ -72,7 +72,7 @@ def main():
     else:
         model = torch.nn.DataParallel(model).cpu()
         model = model.to('cpu')
-    # logger.info(model)
+    logger.info(model)
     
     save_path = os.path.join("./results", args.exp_name)
     os.makedirs(save_path, exist_ok=True)
@@ -80,7 +80,8 @@ def main():
     logger.info(f"args.resume {args.resume}")
     if os.path.isfile(args.resume):
         logger.info("=> loading checkpoint '{}'".format(args.resume))
-        checkpoint = torch.load(args.resume)
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        checkpoint = torch.load(args.resume, map_location=device)
         model.load_state_dict(checkpoint['state_dict'], strict=True)
         logger.info("=> loaded checkpoint '{}'".format(args.resume))
     else:

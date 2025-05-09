@@ -14,6 +14,8 @@ from utils.dataset import tokenize
 from utils.misc import (AverageMeter, ProgressMeter, concat_all_gather, trainMetricGPU, get_seg_image)
 from utils.grasp_eval import (detect_grasps, calculate_iou, calculate_max_iou, calculate_jacquard_index, visualization)
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 def train_with_grasp(train_loader, model, optimizer, scheduler, scaler, epoch, args):
     batch_time = AverageMeter('Batch', ':2.2f')
     data_time = AverageMeter('Data', ':2.2f')
@@ -56,14 +58,15 @@ def train_with_grasp(train_loader, model, optimizer, scheduler, scaler, epoch, a
         
         
         data_time.update(time.time() - end)
-        # data
-        image = image.cuda(non_blocking=True)
-        text = text.cuda(non_blocking=True)
-        ins_mask = ins_mask.cuda(non_blocking=True).unsqueeze(1)
-        grasp_qua_mask = grasp_qua_mask.cuda(non_blocking=True).unsqueeze(1)
-        grasp_sin_mask = grasp_sin_mask.cuda(non_blocking=True).unsqueeze(1)
-        grasp_cos_mask = grasp_cos_mask.cuda(non_blocking=True).unsqueeze(1)
-        grasp_wid_mask = grasp_wid_mask.cuda(non_blocking=True).unsqueeze(1)
+        # move to device
+        
+        image = image.to(device, non_blocking=True)
+        text = text.to(device, non_blocking=True)
+        ins_mask = ins_mask.to(device, non_blocking=True).unsqueeze(1)
+        grasp_qua_mask = grasp_qua_mask.to(device, non_blocking=True).unsqueeze(1)
+        grasp_sin_mask = grasp_sin_mask.to(device, non_blocking=True).unsqueeze(1)
+        grasp_cos_mask = grasp_cos_mask.to(device, non_blocking=True).unsqueeze(1)
+        grasp_wid_mask = grasp_wid_mask.to(device, non_blocking=True).unsqueeze(1)
 
         # # multi-scale training
         # image = F.interpolate(image, size=(new_size, new_size), mode='bilinear')
@@ -417,13 +420,13 @@ def inference_with_grasp(test_loader, model, args):
         sentences = data["sentence"]
         img_paths = data["img_path"]
         
-        image = image.cuda(non_blocking=True)
-        text = text.cuda(non_blocking=True)
-        ins_mask = ins_mask.cuda(non_blocking=True).unsqueeze(1)
-        grasp_qua_mask = grasp_qua_mask.cuda(non_blocking=True).unsqueeze(1)
-        grasp_sin_mask = grasp_sin_mask.cuda(non_blocking=True).unsqueeze(1)
-        grasp_cos_mask = grasp_cos_mask.cuda(non_blocking=True).unsqueeze(1)
-        grasp_wid_mask = grasp_wid_mask.cuda(non_blocking=True).unsqueeze(1)
+        image = image.to(device, non_blocking=True)
+        text = text.to(device, non_blocking=True)
+        ins_mask = ins_mask.to(device, non_blocking=True).unsqueeze(1)
+        grasp_qua_mask = grasp_qua_mask.to(device, non_blocking=True).unsqueeze(1)
+        grasp_sin_mask = grasp_sin_mask.to(device, non_blocking=True).unsqueeze(1)
+        grasp_cos_mask = grasp_cos_mask.to(device, non_blocking=True).unsqueeze(1)
+        grasp_wid_mask = grasp_wid_mask.to(device, non_blocking=True).unsqueeze(1)
         
         # inference & get predictions from model
         pred, target = model(image, text, ins_mask, grasp_qua_mask, grasp_sin_mask, grasp_cos_mask, grasp_wid_mask)
